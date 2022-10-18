@@ -3,4 +3,5 @@ kind: Moon
 metadata:
   name: moon-sample
 spec:
-  # TODO(user): Add fields here
+  foo: a
+  bar: b

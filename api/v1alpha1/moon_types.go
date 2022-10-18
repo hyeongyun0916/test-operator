@@ -20,26 +20,23 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // MoonSpec defines the desired state of Moon
 type MoonSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Moon. Edit moon_types.go to remove/update
 	Foo string `json:"foo,omitempty"`
+	Bar string `json:"bar,omitempty"`
 }
 
 // MoonStatus defines the observed state of Moon
 type MoonStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Foo string `json:"foo,omitempty"`
+	Bar string `json:"bar,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:JSONPath=".status.foo",name=Foo,type=string
+//+kubebuilder:printcolumn:JSONPath=".status.bar",name=Bar,type=string
+//+kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp",description="age"
 
 // Moon is the Schema for the moons API
 type Moon struct {

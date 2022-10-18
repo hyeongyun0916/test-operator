@@ -15,7 +15,18 @@ spec:
     singular: moon
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.foo
+      name: Foo
+      type: string
+    - jsonPath: .status.bar
+      name: Bar
+      type: string
+    - description: age
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Moon is the Schema for the moons API
@@ -35,13 +46,18 @@ spec:
           spec:
             description: MoonSpec defines the desired state of Moon
             properties:
+              bar:
+                type: string
               foo:
-                description: Foo is an example field of Moon. Edit moon_types.go to
-                  remove/update
                 type: string
             type: object
           status:
             description: MoonStatus defines the observed state of Moon
+            properties:
+              bar:
+                type: string
+              foo:
+                type: string
             type: object
         type: object
     served: true
