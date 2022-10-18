@@ -24,18 +24,21 @@ import (
 type MoonSpec struct {
 	Foo string `json:"foo,omitempty"`
 	Bar string `json:"bar,omitempty"`
+	Qux string `json:"qux,omitempty"`
 }
 
 // MoonStatus defines the observed state of Moon
 type MoonStatus struct {
 	Foo string `json:"foo,omitempty"`
 	Bar string `json:"bar,omitempty"`
+	Qux string `json:"qux,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:JSONPath=".status.foo",name=Foo,type=string
 //+kubebuilder:printcolumn:JSONPath=".status.bar",name=Bar,type=string
+//+kubebuilder:printcolumn:JSONPath=".status.qux",name=Qux,type=string
 //+kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp",description="age"
 
 // Moon is the Schema for the moons API
