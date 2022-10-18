@@ -5,8 +5,9 @@
 *.dll
 *.so
 *.dylib
-bin
+bin/*
 testbin/*
+__debug_bin
 
 # Test binary, build with `go test -c`
 *.test
@@ -23,3 +24,12 @@ testbin/*
 *.swp
 *.swo
 *~
+
+vendor/
+report.json
+*.tar.gz        # ignore redis package
+.DS_Store
+
+# Chart dependencies
+**/charts/*.tgz
+**/Chart.lock
