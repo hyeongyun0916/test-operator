@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -54,12 +55,28 @@ func (r *MoonReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	l := log.FromContext(ctx)
 	l.Info("start")
 
+	moon, found, err := r.getMoon(ctx, req.NamespacedName)
+	if !found {
+		return ctrl.Result{}, nil
+	}
+	if err != nil {
+		return ctrl.Result{}, errors.Wrapf(err, "can't get Moon %s", req.NamespacedName.Name)
+	}
+	copiedMoon := moon.DeepCopy()
+
 	result := &multierror.Error{}
-	if err := r.updateWithRetryOnConflict(ctx, req.NamespacedName, r.syncFoo); err != nil {
+	if err := r.syncFoo(ctx, copiedMoon); err != nil {
 		result = multierror.Append(result, errors.Wrap(err, "can't syncFoo"))
 	}
-	if err := r.updateWithRetryOnConflict(ctx, req.NamespacedName, r.syncBar); err != nil {
+	if err := r.syncBar(ctx, copiedMoon); err != nil {
 		result = multierror.Append(result, errors.Wrap(err, "can't syncBar"))
+	}
+
+	if diff := cmp.Diff(moon.Status, copiedMoon.Status); diff != "" {
+		l.Info(diff)
+		if err := r.Status().Patch(ctx, copiedMoon, client.MergeFrom(moon.DeepCopy())); err != nil {
+			return ctrl.Result{}, errors.Wrap(err, "can't patch")
+		}
 	}
 
 	return ctrl.Result{}, result.ErrorOrNil()
