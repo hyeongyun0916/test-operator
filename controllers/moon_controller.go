@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -66,27 +67,30 @@ func (r *MoonReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	// copiedMoon.Spec = v1alpha1.MoonSpec{Bar: "a",}
 
 	result := &multierror.Error{}
-	if err := r.patchTest(ctx, copiedMoon); err != nil {
-		result = multierror.Append(result, errors.Wrap(err, "can't patchTest"))
+	// if err := r.patchTest(ctx, copiedMoon); err != nil {
+	// 	result = multierror.Append(result, errors.Wrap(err, "can't patchTest"))
+	// }
+	if err := r.syncFoo(ctx, copiedMoon); err != nil {
+		result = multierror.Append(result, errors.Wrap(err, "can't syncFoo"))
 	}
-	// if err := r.syncFoo(ctx, copiedMoon); err != nil {
-	// 	result = multierror.Append(result, errors.Wrap(err, "can't syncFoo"))
-	// }
-	// if err := r.syncBar(ctx, copiedMoon); err != nil {
-	// 	result = multierror.Append(result, errors.Wrap(err, "can't syncBar"))
-	// }
+	if err := r.syncBar(ctx, copiedMoon); err != nil {
+		result = multierror.Append(result, errors.Wrap(err, "can't syncBar"))
+	}
 
-	// if diff := cmp.Diff(moon.Status, moon.Status); diff != "" {
-	// 	l.Info(diff)
-	// 	// Get에서 얻어온 ObjectMeta의 불필요한 필드를 제거한다
-	// 	copiedMoon.ObjectMeta.ManagedFields = nil
-	// 	if err := r.Patch(ctx, copiedMoon, client.Apply, client.FieldOwner("controller"), client.ForceOwnership); err != nil {
-	// 		return ctrl.Result{}, errors.Wrap(err, "can't server-side patch")
-	// 	}
-	// 	if err := r.Status().Patch(ctx, copiedMoon, client.Apply, client.FieldOwner("controller"), client.ForceOwnership); err != nil {
-	// 		return ctrl.Result{}, errors.Wrap(err, "can't server-side patch")
-	// 	}
-	// }
+	if diff := cmp.Diff(moon.Status, copiedMoon.Status); diff != "" {
+		l.Info(diff)
+		// Get에서 얻어온 ObjectMeta의 불필요한 필드를 제거한다
+		// 원래는 Apply Configuration을 적용하는게 정확할 듯
+		// https://intrepidgeeks.com/tutorial/using-a-dedicated-controller-to-create-a-serverside-application-configuration-deepcopy
+		copiedMoon.ObjectMeta.ManagedFields = nil
+		moon.ObjectMeta.ResourceVersion = ""
+		// if err := r.Patch(ctx, copiedMoon, client.Apply, client.FieldOwner("controller"), client.ForceOwnership); err != nil {
+		// 	return ctrl.Result{}, errors.Wrap(err, "can't server-side patch")
+		// }
+		if err := r.Status().Patch(ctx, copiedMoon, client.Apply, client.FieldOwner("controller"), client.ForceOwnership); err != nil {
+			return ctrl.Result{}, errors.Wrap(err, "can't server-side patch")
+		}
+	}
 
 	return ctrl.Result{}, result.ErrorOrNil()
 }
